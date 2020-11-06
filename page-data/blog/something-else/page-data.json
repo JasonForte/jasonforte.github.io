@@ -1,1 +1,0 @@
-{"componentChunkName":"component---src-templates-article-js","path":"/blog/something-else","result":{"data":{"markdownRemark":{"html":"<h1>This is an intro article</h1>","frontmatter":{"date":"01 June 2020","slug":"/blog/something-else","title":"Something else entirely"}}},"pageContext":{"slug":"/blog/something-else"}}}

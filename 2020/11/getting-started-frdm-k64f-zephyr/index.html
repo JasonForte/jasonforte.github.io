@@ -1,0 +1,95 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="ie=edge"/><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/><style data-href="/styles.264862f6ce02a87bebf0.css">@import url(https://cdnjs.cloudflare.com/ajax/libs/hack-font/3.003/web/hack.min.css);@import url(https://fonts.googleapis.com/css2?family=Boogaloo&family=Raleway&family=Roboto:wght@300;400&display=swap);*,:after,:before{box-sizing:inherit}html{font-size:62.5%;font-family:Roboto,Verdana,Geneva,Tahoma,sans-serif}a{text-decoration:none;color:#000}a:visited{color:inherit}a:hover{color:#2d5cb7}header{text-align:center;font-family:Roboto,Verdana,Geneva,Tahoma,sans-serif;padding-top:1.8rem}header>h1,header h2{margin:0;padding:0}header>h1{font-size:2.7rem}body,header>h2{font-size:1.6rem}body{background-color:rgba(254,239,226,.58)}p{margin:1rem 0}p>code{background-color:hsla(0,0%,83.9%,.72);padding:.2rem .5rem;border-radius:.2rem;font-size:1.4rem}article>h1{margin:1.8rem 0 .6rem}footer{margin-top:5rem;text-align:center}.article__meta{font-size:1.4rem;color:rgba(0,0,0,.54);margin:.5rem 0}.article__list>article:first-child{margin-top:2.8rem}.article__readmore:hover{color:#bdcace}.article__readmore>a{color:#2d5cb7}main{padding-top:2rem}main>h1{margin:1rem 0}main>.article__meta{margin-top:1rem;padding-bottom:.8rem;margin-bottom:1.6rem;border-bottom:.1rem solid rgba(0,0,0,.27)}pre{background-color:hsla(0,0%,100%,.72);padding:1.2rem;margin:1.2rem 0;border-radius:.2rem;overflow-x:scroll}pre>code{font-size:1.3rem;font-family:Hack,Consolas,Monaco,Andale Mono,Ubuntu Mono,monospace;line-height:2.2rem}.article__content>p>a{color:#2d5cb7}.article__content>p>em{color:rgba(0,0,0,.54)}.article__content>blockquote{border-left:1px solid rgba(0,0,0,.27);padding:.8rem 2.4rem;margin:0;color:rgba(0,0,0,.54)}.article__content>blockquote>p>a{color:#2d5cb7}</style><meta name="generator" content="Gatsby 2.21.13"/><title data-react-helmet="true">Deploying Zephyr OS on the FRDM-K64F development board | Cape Town to London</title><meta data-react-helmet="true" name="description" content="I&#x27;m Jason Forte and this blog is about tech, ethics, startups &amp; the future."/><meta data-react-helmet="true" property="og:title" content="Deploying Zephyr OS on the FRDM-K64F development board"/><meta data-react-helmet="true" property="og:description" content="I&#x27;m Jason Forte and this blog is about tech, ethics, startups &amp; the future."/><meta data-react-helmet="true" property="og:type" content="website"/><meta data-react-helmet="true" name="twitter:card" content="summary"/><meta data-react-helmet="true" name="twitter:creator" content="@hellojforte"/><meta data-react-helmet="true" name="twitter:title" content="Deploying Zephyr OS on the FRDM-K64F development board"/><meta data-react-helmet="true" name="twitter:description" content="I&#x27;m Jason Forte and this blog is about tech, ethics, startups &amp; the future."/><link rel="manifest" href="/manifest.webmanifest"/><meta name="theme-color" content="#663399"/><link rel="apple-touch-icon" sizes="48x48" href="/icons/icon-48x48.png"/><link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png"/><link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png"/><link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png"/><link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png"/><link rel="apple-touch-icon" sizes="256x256" href="/icons/icon-256x256.png"/><link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png"/><link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png"/><link rel="preconnect dns-prefetch" href="https://www.google-analytics.com"/><link as="script" rel="preload" href="/webpack-runtime-7ae6f3da1a9938276ad1.js"/><link as="script" rel="preload" href="/framework-20ef01989315425214b5.js"/><link as="script" rel="preload" href="/app-b42ed5a8af7cb6f3088b.js"/><link as="script" rel="preload" href="/styles-f12963b3798c232a68f6.js"/><link as="script" rel="preload" href="/commons-d387e45a2421f7fe5ebf.js"/><link as="script" rel="preload" href="/component---src-templates-article-js-e474c0ac5f6d04ce756a.js"/><link as="fetch" rel="preload" href="/page-data/2020/11/getting-started-frdm-k64f-zephyr/page-data.json" crossorigin="anonymous"/><link as="fetch" rel="preload" href="/page-data/app-data.json" crossorigin="anonymous"/></head><body><div id="___gatsby"><div style="outline:none" tabindex="-1" id="gatsby-focus-wrapper"><header><h1><a class="title" href="/">Cape Town to London</a></h1><h2 class="subtitle">A blog about tech, ethics &amp; startups</h2></header><div style="margin:0 auto;max-width:960px;padding:0 1.0875rem 1.45rem"><main><h1 class="article__heading">Deploying Zephyr OS on the FRDM-K64F development board</h1><p class="article__meta">By <span>Jason Forte</span> • <!-- -->06 November 2020</p><div class="article__content"><h2>Getting Closer to the Curcuits</h2>
+<p>Over the past few months I've been having farily regular meetings with customers who are building startups in the IoT
+space. IoT was once a big hit and it has me thinking if there really was a lull or if my Kubernetes distraction has lead
+me astray.</p>
+<p>IoT is very much still alive and the recent sighting of projects such as K3s and KubeEdge bringing Kubernetes to the edge
+has sparked the interest of this ex electrical engineering student.</p>
+<p>Almost on a whim I managed to get my hands on a FRDM-K64F MCU and an NVidia Jetson Nano (article comming soon). Having
+both of these would give me the flexibility to build with AWS IoT Greengrass, FreeRTOS &#x26; Zephyr OS to build embeded
+systems, IoT gateways and a number of edge device applications.</p>
+<h2>Choosing the Device</h2>
+<p>Both devices were found after consulting the <a href="https://devices.amazonaws.com">AWS IoT Supported Devices Catalog</a> to check
+compatibility with FreeRTOS, IoT Core &#x26; AWS Greengrass.</p>
+<h3>Why the FRDM-K64F?</h3>
+<p>I didn't spend too long deciding on a board. My main purpose was general tinkering. I chose this board because it was
+listed as supporting FreeRTOS on the device catalog. It's considered a "development board" so I thought that, paired with
+the same pin configuration as an Ardunio, would give me the options to play around with some of the addon boards in future.</p>
+<p>The ethernet port was essential as I intended to use this device as a internet connected low power device that connected
+into the AWS Cloud.</p>
+<h2>First Project - Hello World</h2>
+<p>For my first task, I wanted to just get a simple hello world &#x26; blinky application running on my FRDM-K64F. It's been a
+while since I last wrote code for a microcontroller and even back then I relied on a GUI. In this project I decided to
+do away with installing IDEs because I'd prefer to stick with VSCode and my terminal.</p>
+<p>In terms of the RTOS, I initially tried out FreeRTOS but struggled a bit with setting up the tooling around my board. So
+I decided to go with Zephyr OS as a Linux Foundation backed option.</p>
+<h2>Prepping the Board with DAPLink</h2>
+<p>DAPLink is the bit of software that allows the easy flashing and debugging of code that is running on the MCU. When I
+first plugged in my board I was able to see the board mount as <code>BOOTLOADER</code>.</p>
+<p>Because my device mounted as <code>BOOTLOADER</code> and not <code>MAINTENANCE</code> the docs required me to update the DAPLink Bootloader
+which I did <a href="https://os.mbed.com/blog/entry/DAPLink-bootloader-update/">by following the mbed OS guide</a>.</p>
+<p>Recycling the device power automatically mounted the board as <code>MAITENANCE</code> - good sign. Now I could to</p>
+<pre><code class="language-bash">$ cp ./0244_k20dx_bootloader_update_0x5000.bin /media/BOOTLOADER &#x26;&#x26; sync
+$ # Recycle Power
+$ cp ./0253_k20dx_frdmk64f_0x5000.bin /media/MAINTENANCE &#x26;&#x26; sync
+$ # Recycle Power
+</code></pre>
+<p>This time, when you re-cycle power you should see the board mount as <code>DAPLink</code>.</p>
+<h2>Installing Zephyr OS Dependncies</h2>
+<p>I was working on a fairly fresh installation of Ubuntu 20.04.1 so my next step was to install the Zephyr OS dependencies
+<a href="https://docs.zephyrproject.org/latest/getting_started/index.html">as stated in this guide</a>.</p>
+<p>This gave me access to the <code>west</code> tool that would allow me to build my sample apps and then flash to the device.</p>
+<h2>Loading the Hello World</h2>
+<p>As part of the <a href="https://docs.zephyrproject.org/latest/getting_started/index.html">Zephyr getting started guide</a> you end
+up with a <code>~/zephyrproject/zephyr</code> directory.</p>
+<p>To build the hello world app and flash to your device you do the following:</p>
+<pre><code class="language-bash">$ west build -b frdm_k64f samples/hello_world
+$ west flash
+</code></pre>
+<p>With that you have now got the hello world app running on the FRDM-K64F board.</p>
+<h2>Viewing the Zephyr Hello World Output</h2>
+<p>I'll admit that what stumped me at first glance was how I'd be able to see the Hello World output that the device was
+printing.</p>
+<p>After some research, I found that it was fairly straight forward thanks to DAPLink. The device appears as a tty under
+the <code>/dev</code> directory.</p>
+<p>To find the device I need to check dmesg</p>
+<pre><code class="language-bash">$ dmesg | grep tty
+[66555.401523] cdc_acm 1-1:1.1: ttyACM0: USB ACM device
+[66570.292077] cdc_acm 1-1:1.1: ttyACM0: USB ACM device
+</code></pre>
+<p>From this I knew I'd be able to access from <code>/dev/ttyACM0</code>. There was only one last piece of the puzzle and that was to
+set the baud rate of the serial port. This was accomplished using <code>stty</code></p>
+<pre><code class="language-bash">$ stty -F /dev/ttyACM0 115200
+</code></pre>
+<p>With that I could see the output being emitted to the serial port with the following command. All I needed to do was
+push the reset button to see the message pop up.</p>
+<pre><code class="language-bash">$ cat &#x3C; /dev/ttyACM0
+*** Booting Zephyr OS build zephyr-v2.4.0-1133-ge4e3ab3cc315  ***
+
+Hello World! frdm_k64f
+</code></pre>
+<h2>Second Project - Blinky Example on the FRDM-K64F</h2>
+<p>The next thing I did was test out the blinky example. Having all the above setup it was easy to build and deploy this
+from the provided source code in <code>samples/basic/blinky</code>.</p>
+<pre><code class="language-bash">$ west build -b frdm_k64f samples/basic/blinky
+$ west flash
+</code></pre>
+<p>As expected, on reset my device light started flashing green.</p>
+<h2>Conclusion</h2>
+<p>With this basic example out of the way I felt I was ready to try out some more complicated setups involving ARM, IoT Core
+and the embedded C SDKs for AWS.</p></div></main><footer>Copyright © <!-- -->2020<!-- --> | <a href="https://www.linkedin.com/in/jasonforte/" target="_blank">Jason Forte</a></footer></div></div><div id="gatsby-announcer" style="position:absolute;top:0;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0" aria-live="assertive" aria-atomic="true"></div></div><script>
+  
+  
+  if(true) {
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  }
+  if (typeof ga === "function") {
+    ga('create', 'UA-26326918-3', 'auto', {});
+      
+      
+      
+      
+      
+      }</script><script id="gatsby-script-loader">/*<![CDATA[*/window.pagePath="/2020/11/getting-started-frdm-k64f-zephyr";/*]]>*/</script><script id="gatsby-chunk-mapping">/*<![CDATA[*/window.___chunkMapping={"app":["/app-b42ed5a8af7cb6f3088b.js"],"component---src-pages-404-js":["/component---src-pages-404-js-eafddd4f93ff47a0145b.js"],"component---src-pages-index-js":["/component---src-pages-index-js-343f88432920987c90d7.js"],"component---src-templates-article-js":["/component---src-templates-article-js-e474c0ac5f6d04ce756a.js"]};/*]]>*/</script><script src="/component---src-templates-article-js-e474c0ac5f6d04ce756a.js" async=""></script><script src="/commons-d387e45a2421f7fe5ebf.js" async=""></script><script src="/styles-f12963b3798c232a68f6.js" async=""></script><script src="/app-b42ed5a8af7cb6f3088b.js" async=""></script><script src="/framework-20ef01989315425214b5.js" async=""></script><script src="/webpack-runtime-7ae6f3da1a9938276ad1.js" async=""></script></body></html>
