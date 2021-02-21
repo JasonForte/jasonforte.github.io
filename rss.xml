@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[Cape Town to London]]></title><description><![CDATA[I'm Jason Forte and this blog is about tech, ethics, startups & the future.]]></description><link>https://www.jforte.me</link><generator>GatsbyJS</generator><lastBuildDate>Sun, 21 Feb 2021 08:03:16 GMT</lastBuildDate><item><title><![CDATA[Deploying Zephyr OS on the FRDM-K64F development board]]></title><description><![CDATA[Getting Closer to the Curcuits Over the past few months I've been having farily regular meetings with customers who are building startups in…]]></description><link>https://www.jforte.me/getting-started-frdm-k64f/</link><guid isPermaLink="false">https://www.jforte.me/getting-started-frdm-k64f/</guid><pubDate>Fri, 06 Nov 2020 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Getting Closer to the Curcuits&lt;/h2&gt;
+&lt;p&gt;Over the past few months I&apos;ve been having farily regular meetings with customers who are building startups in the IoT
+space. IoT was once a big hit and it has me thinking if there really was a lull or if my Kubernetes distraction has lead
+me astray.&lt;/p&gt;
+&lt;p&gt;IoT is very much still alive and the recent sighting of projects such as K3s and KubeEdge bringing Kubernetes to the edge
+has sparked the interest of this ex electrical engineering student.&lt;/p&gt;
+&lt;p&gt;Almost on a whim I managed to get my hands on a FRDM-K64F MCU and an NVidia Jetson Nano (article comming soon). Having
+both of these would give me the flexibility to build with AWS IoT Greengrass, FreeRTOS &amp;#x26; Zephyr OS to build embeded
+systems, IoT gateways and a number of edge device applications.&lt;/p&gt;
+&lt;h2&gt;Choosing the Device&lt;/h2&gt;
+&lt;p&gt;Both devices were found after consulting the &lt;a href=&quot;https://devices.amazonaws.com&quot;&gt;AWS IoT Supported Devices Catalog&lt;/a&gt; to check
+compatibility with FreeRTOS, IoT Core &amp;#x26; AWS Greengrass.&lt;/p&gt;
+&lt;h3&gt;Why the FRDM-K64F?&lt;/h3&gt;
+&lt;p&gt;I didn&apos;t spend too long deciding on a board. My main purpose was general tinkering. I chose this board because it was
+listed as supporting FreeRTOS on the device catalog. It&apos;s considered a &quot;development board&quot; so I thought that, paired with
+the same pin configuration as an Ardunio, would give me the options to play around with some of the addon boards in future.&lt;/p&gt;
+&lt;p&gt;The ethernet port was essential as I intended to use this device as a internet connected low power device that connected
+into the AWS Cloud.&lt;/p&gt;
+&lt;h2&gt;First Project - Hello World&lt;/h2&gt;
+&lt;p&gt;For my first task, I wanted to just get a simple hello world &amp;#x26; blinky application running on my FRDM-K64F. It&apos;s been a
+while since I last wrote code for a microcontroller and even back then I relied on a GUI. In this project I decided to
+do away with installing IDEs because I&apos;d prefer to stick with VSCode and my terminal.&lt;/p&gt;
+&lt;p&gt;In terms of the RTOS, I initially tried out FreeRTOS but struggled a bit with setting up the tooling around my board. So
+I decided to go with Zephyr OS as a Linux Foundation backed option.&lt;/p&gt;
+&lt;h2&gt;Prepping the Board with DAPLink&lt;/h2&gt;
+&lt;p&gt;DAPLink is the bit of software that allows the easy flashing and debugging of code that is running on the MCU. When I
+first plugged in my board I was able to see the board mount as &lt;code&gt;BOOTLOADER&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Because my device mounted as &lt;code&gt;BOOTLOADER&lt;/code&gt; and not &lt;code&gt;MAINTENANCE&lt;/code&gt; the docs required me to update the DAPLink Bootloader
+which I did &lt;a href=&quot;https://os.mbed.com/blog/entry/DAPLink-bootloader-update/&quot;&gt;by following the mbed OS guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Recycling the device power automatically mounted the board as &lt;code&gt;MAITENANCE&lt;/code&gt; - good sign. Now I could to&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ cp ./0244_k20dx_bootloader_update_0x5000.bin /media/BOOTLOADER &amp;#x26;&amp;#x26; sync
+$ # Recycle Power
+$ cp ./0253_k20dx_frdmk64f_0x5000.bin /media/MAINTENANCE &amp;#x26;&amp;#x26; sync
+$ # Recycle Power
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This time, when you re-cycle power you should see the board mount as &lt;code&gt;DAPLink&lt;/code&gt;.&lt;/p&gt;
+&lt;h2&gt;Installing Zephyr OS Dependncies&lt;/h2&gt;
+&lt;p&gt;I was working on a fairly fresh installation of Ubuntu 20.04.1 so my next step was to install the Zephyr OS dependencies
+&lt;a href=&quot;https://docs.zephyrproject.org/latest/getting_started/index.html&quot;&gt;as stated in this guide&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;This gave me access to the &lt;code&gt;west&lt;/code&gt; tool that would allow me to build my sample apps and then flash to the device.&lt;/p&gt;
+&lt;h2&gt;Loading the Hello World&lt;/h2&gt;
+&lt;p&gt;As part of the &lt;a href=&quot;https://docs.zephyrproject.org/latest/getting_started/index.html&quot;&gt;Zephyr getting started guide&lt;/a&gt; you end
+up with a &lt;code&gt;~/zephyrproject/zephyr&lt;/code&gt; directory.&lt;/p&gt;
+&lt;p&gt;To build the hello world app and flash to your device you do the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ west build -b frdm_k64f samples/hello_world
+$ west flash
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With that you have now got the hello world app running on the FRDM-K64F board.&lt;/p&gt;
+&lt;h2&gt;Viewing the Zephyr Hello World Output&lt;/h2&gt;
+&lt;p&gt;I&apos;ll admit that what stumped me at first glance was how I&apos;d be able to see the Hello World output that the device was
+printing.&lt;/p&gt;
+&lt;p&gt;After some research, I found that it was fairly straight forward thanks to DAPLink. The device appears as a tty under
+the &lt;code&gt;/dev&lt;/code&gt; directory.&lt;/p&gt;
+&lt;p&gt;To find the device I need to check dmesg&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ dmesg | grep tty
+[66555.401523] cdc_acm 1-1:1.1: ttyACM0: USB ACM device
+[66570.292077] cdc_acm 1-1:1.1: ttyACM0: USB ACM device
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From this I knew I&apos;d be able to access from &lt;code&gt;/dev/ttyACM0&lt;/code&gt;. There was only one last piece of the puzzle and that was to
+set the baud rate of the serial port. This was accomplished using &lt;code&gt;stty&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ stty -F /dev/ttyACM0 115200
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With that I could see the output being emitted to the serial port with the following command. All I needed to do was
+push the reset button to see the message pop up.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ cat &amp;#x3C; /dev/ttyACM0
+*** Booting Zephyr OS build zephyr-v2.4.0-1133-ge4e3ab3cc315  ***
+
+Hello World! frdm_k64f
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;Second Project - Blinky Example on the FRDM-K64F&lt;/h2&gt;
+&lt;p&gt;The next thing I did was test out the blinky example. Having all the above setup it was easy to build and deploy this
+from the provided source code in &lt;code&gt;samples/basic/blinky&lt;/code&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ west build -b frdm_k64f samples/basic/blinky
+$ west flash
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;As expected, on reset my device light started flashing green.&lt;/p&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;With this basic example out of the way I felt I was ready to try out some more complicated setups involving ARM, IoT Core
+and the embedded C SDKs for AWS.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[Getting Started with Helm v3]]></title><description><![CDATA[I've been digging more into Kubernetes lately trying to figure out the best way to monitor certain resources and metrics within my cluster…]]></description><link>https://www.jforte.me/getting-started-helm/</link><guid isPermaLink="false">https://www.jforte.me/getting-started-helm/</guid><pubDate>Mon, 06 Jan 2020 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;I&apos;ve been digging more into Kubernetes lately trying to figure out the best way to monitor certain resources and metrics within my cluster.&lt;/p&gt;
+&lt;p&gt;An important component for monitoring in Kubernetes is metrics-server - which I usually quickly install with helm.&lt;/p&gt;
+&lt;p&gt;So I downloaded the newest release of Helm and did the following:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ helm install stable/metrics-server metrics-server \
+  --version 2.0.2 \
+  --namespace metrics
+Error: failed to download &quot;metrics-server&quot; (hint: running `helm repo update` may help)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Hmm, that&apos;s weird. Ok, let me follow what the output says:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;$ helm repo update
+Error: no repositories found. You must add one before updating
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;Helm Repo Initialization&lt;/h2&gt;
+&lt;p&gt;The reason we&apos;re seeing these messages is because in Helm v3 the &lt;code&gt;stable&lt;/code&gt; repo is not automatically installed.&lt;/p&gt;
+&lt;p&gt;There reason for this can be found in the &lt;a href=&quot;https://github.com/helm/helm/issues/6359#issuecomment-528914720&quot;&gt;comments on GitHub&lt;/a&gt;
+but essentially the helm team are trying to move away from the idea that &lt;code&gt;stable&lt;/code&gt; is the de-facto &quot;central&quot; repo for
+all helm charts.&lt;/p&gt;
+&lt;p&gt;What&apos;s also not so clear from any of the docs is how to enable the stable repo so that you can go on living your life.&lt;/p&gt;
+&lt;h2&gt;Usability&lt;/h2&gt;
+&lt;p&gt;Although their decision makes sense, from a usability point of view this can cause issues - especially when you are trying to skill up newer engineers into the Kubernetes way of life.&lt;/p&gt;
+&lt;h2&gt;Adding the Stable Repo to Helm v3&lt;/h2&gt;
+&lt;p&gt;To add the stable repo you need to install it using the url to the charts which are hosted in GCP:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-bash&quot;&gt;helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+&quot;stable&quot; has been added to your repositories
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;From here you can now update the repo and install the required stable charts.&lt;/p&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;I hope that this might at least help some other schmuck like me who spent a good hour trying to figure out how to add this in :).&lt;/p&gt;</content:encoded></item><item><title><![CDATA[Generate an HTTPS cert using LetsEncrypt]]></title><description><![CDATA[This article is the third in a series of articles outlining how to setup a highly available, scalable, serverless single page application…]]></description><link>https://www.jforte.me/https-letsencrypt/</link><guid isPermaLink="false">https://www.jforte.me/https-letsencrypt/</guid><pubDate>Fri, 27 Apr 2018 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;This article is the third in a series of articles outlining how to setup a highly available, scalable, serverless single page application (SPA) using AWS S3.&lt;/p&gt;
+&lt;p&gt;In the &lt;a href=&quot;https://www.jforte.me/2018/04/using-a-custom-domain-for-an-s3-hosted-website-with-amazon-route53/&quot; rel=&quot;noopener&quot; target=&quot;_blank&quot;&gt;previous article&lt;/a&gt;, I went over how to setup a custom domain for our app with Amazon Route 53.&lt;/p&gt;
+&lt;p&gt;In this article I will cover:&lt;/p&gt;
+&lt;ul&gt;
+ 	&lt;li&gt;Installing CertBot to automatically generate signed TLS certificates.&lt;/li&gt;
+ 	&lt;li&gt;Using CertBot with the DNS challenge to create a TLS certificate.&lt;/li&gt;
+ 	&lt;li&gt;Creating TXT records in Route 53 to verify domain ownership to CertBot.&lt;/li&gt;
+ 	&lt;li&gt;Importing our certificates to AWS Certificate Manager&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1&gt;Is it really so easy?&lt;/h1&gt;
+With the movement to a more secure web comes the adoption of HTTPS. This migration would be much harder if there wasn&apos;t companies out there doing their best to make securing your site fast an simple.
+&lt;h2&gt;Install CertBot&lt;/h2&gt;
+Once you have purchased a domain via Godaddy, AWS etc. You will need to download &lt;a href=&quot;https://certbot.eff.org/&quot;&gt;CertBot&lt;/a&gt;. This tool is an easy way to interface to the LetsEncrypt server.
+&lt;p&gt;CertBot does not currently support Windows. In this case I can recommend spinning up an EC2 instance and using putty to SSH to the instance.&lt;/p&gt;
+&lt;h2&gt;LetsEncrypt DNS Challenge&lt;/h2&gt;
+In the default mode, CertBot needs to be run from an instance that is hosting your website. Because we are hosting on AWS we do not have the option of connecting to the instance - unless we reassign the DNS to point to an instance.
+&lt;p&gt;So in our case we&apos;ll use the &lt;code&gt;dns-challenge&lt;/code&gt; option with CertBot. This option will generate a string that you can add to your DNS to prove that you have control of the domain. Let&apos;s generate the cert for both the naked domain and the www domain:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ sudo certbot certonly --manual --preferred-challenges dns \
+                        -d lula.cloud \
+                        -d www.lula.cloud&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;Createing the TXT DNS records&lt;/h2&gt;
+If you are following the series on creating a app on S3 then you will be using Route53 for DNS management.
+&lt;p&gt;Go to Route 53 in the AWS Management Console and then select the hosted zone for your app.&lt;/p&gt;
+&lt;p&gt;Create a new Record Set, name it _acme-challenge and make it a TXT record. Update the value to match the outputted string (you may need to surround the value with double quotes &lt;code&gt;&quot;&lt;/code&gt; if there are some backslashes etc).&lt;/p&gt;
+&lt;p&gt;[caption id=&quot;attachment_192&quot; align=&quot;aligncenter&quot; width=&quot;279&quot;]&lt;img src=&quot;https://www.jforte.me/wp-content/uploads/2018/04/Screenshot-from-2018-04-27-18-43-36-279x300.png&quot; alt=&quot;Creating a TXT record in route 53&quot; class=&quot;size-medium wp-image-192&quot; width=&quot;279&quot; height=&quot;300&quot;&gt; Creating a TXT record in Route 53[/caption]&lt;/p&gt;
+&lt;p&gt;In your console when you hit enter, you&apos;ll be prompted with a record for the &lt;code&gt;www&lt;/code&gt; domain. Complete the above steps for the &lt;code&gt;www&lt;/code&gt; domain.&lt;/p&gt;
+&lt;p&gt;Before you hit the final enter to generate the certs, I recommend using a DNS checker tool such as &lt;a href=&quot;https://dnschecker.org/&quot;&gt;DNSChecker&lt;/a&gt; to validate that the NS record has propagated. If the record has not properly propagated then the generation step will fail. You&apos;ll have to start the process again.&lt;/p&gt;
+&lt;h2&gt;Adding your Certs to AWS Certificate Manager&lt;/h2&gt;
+Hitting enter for the last time will generate the cert and complete the signing process.
+&lt;p&gt;By default, your required certs and keys will be in &lt;code&gt;/etc/letsencrypt/live/yourdomainname.com/&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;We&apos;ll be adding these certs into the AWS Certificate Manager. Because the goal is to eventually add this onto a CloudFront distribution, we need to make sure to add the certs to the N.Virginia (us-east-1) region.&lt;/p&gt;
+&lt;p&gt;If you are only interested in using the cert to secure traffic to a load balancer then you can import the cert to the same region as the load balancer.&lt;/p&gt;
+&lt;blockquote&gt;CloudFront can only attach AWS Certificate Manager certificates hosted in the N.Virginia (&lt;code&gt;us-east-1&lt;/code&gt;) region.&lt;/blockquote&gt;
+Go to Certificate Manager in the AWS Management Console. Make sure you&apos;re in the N.Virginia region (indicated in the top right panel). Choose import a certificate.
+&lt;p&gt;For the three fields you&apos;ll need to copy the text certificates from your &lt;code&gt;letsencrypt&lt;/code&gt; directory. It&apos;s sufficient to use &lt;code&gt;cat&lt;/code&gt; to show the text and copy and paste the output to the Certificate Manager.&lt;/p&gt;
+&lt;ul&gt;
+ 	&lt;li&gt;Certificate Body - &lt;code&gt;cert.pem&lt;/code&gt;&lt;/li&gt;
+ 	&lt;li&gt;Certificate private key - &lt;code&gt;privkey.pem&lt;/code&gt;&lt;/li&gt;
+ 	&lt;li&gt;Certificate chain - &lt;code&gt;chain.pem&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+[caption id=&quot;attachment_197&quot; align=&quot;aligncenter&quot; width=&quot;700&quot;]&lt;img src=&quot;https://www.jforte.me/wp-content/uploads/2018/04/Screenshot-from-2018-04-27-19-43-21-768x401.png&quot; alt=&quot;Adding Certificates to AWS Certificate Manager&quot; class=&quot;size-medium_large wp-image-197&quot; width=&quot;700&quot; height=&quot;365&quot;&gt; Adding Certificates to AWS Certificate Manager[/caption]
+&lt;p&gt;Select review and then import.&lt;/p&gt;
+&lt;h2&gt;Next Steps&lt;/h2&gt;
+We&apos;ve now imported a valid TLS certificate and key into AWS Certificate Manager. In the next article I&apos;ll go over:
+&lt;ul&gt;
+ 	&lt;li&gt;&lt;a href=&quot;https://www.jforte.me/2018/05/improve-loading-time-of-a-vue-js-app-hosted-s3-cloudfront/&quot;&gt;Improving loading time by setting up a CloudFront distribution to act as a CDN for our static files.&lt;/a&gt;&lt;/li&gt;
+ 	&lt;li&gt;Implementing a deployment pipeline to automatically deploy changes using GitLab&lt;/li&gt;
+&lt;/ul&gt;</content:encoded></item><item><title><![CDATA[Inspect Docker traffic with tcpdump]]></title><description><![CDATA[I was recently involved in a project deploying a Django application to AWS EC2 Container Service. I had spent a few days
+building the app…]]></description><link>https://www.jforte.me/docker-traffic-tcpdump/</link><guid isPermaLink="false">https://www.jforte.me/docker-traffic-tcpdump/</guid><pubDate>Sat, 04 Nov 2017 00:00:00 GMT</pubDate><content:encoded>&lt;p&gt;I was recently involved in a project deploying a Django application to AWS EC2 Container Service. I had spent a few days
+building the app into a container alongside a RabbitMQ and Postgres containers. I made use of docker compose to run &amp;#x26;
+tested locally.&lt;/p&gt;
+&lt;p&gt;There came point where I needed to quickly check the amount of TCP traffic being sent to a specific third-party API.&lt;/p&gt;
+&lt;h2&gt;Basic Compose Network&lt;/h2&gt;
+When you startup your containers with docker compose, a network is automatically created for your containers.
+&lt;p&gt;&lt;strong&gt;Check all the containers are still running&lt;/strong&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ docker-compose ps
+         Name      State                    Ports
+-------------------------------------------------------------------
+django_app_1       Up      0.0.0.0:5000-&amp;gt;5000/tcp
+django_db_1        Up      5432/tcp
+django_rabbit_1    Up      25672/tcp, 4369/tcp, 5671/tcp, 5672/tcp
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;strong&gt;View the network created for the containers&lt;/strong&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;$ docker network ls
+NETWORK ID     NAME                  DRIVER          SCOPE
+2106f72737b4   django_default        bridge          local
+1c8fc1a172a5   host                  host            local
+c0504b7be27b   none                  null            local
+bb5f6238e0e9   bridge                bridge          local
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The network allows your containers to communicate between each other without affecting the host&apos;s network.&lt;/p&gt;
+&lt;blockquote&gt;You can&apos;t just use tcpdump from the host because the docker network is isolated from the host network by default.&lt;/blockquote&gt;
+&lt;h2&gt;Attaching to a Compose network&lt;/h2&gt;
+Instead I can attach to the compose network using the &lt;code&gt;--net&lt;/code&gt; parameter in my &lt;code&gt;docker run&lt;/code&gt; command. From this new container I can access the network interface for the containers running with docker-compose.
+&lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;# Run a Debian container attached to the docker-compose network
+$ docker run -it --rm --net=container:django_app_1 debian
+root@f5d9ed725329:/# apt update &amp;amp;&amp;amp; apt install -y tcpdump
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;TCPDump for Outbound Traffic&lt;/h2&gt;
+Now I can monitor traffic on the network using regular tcpdump commands.
+&lt;pre&gt;&lt;code&gt;root@f5d9ed:/# # Running tcpdump on the eth0 interface
+root@f5d9ed:/# tcpdump -v \
+           -i eth0 \
+           -n &apos;dst host 1.2.3.4 and (dst port 80 or dst port 443)&apos;
+tcpdump: listening on eth0, link-type EN10MB (Ethernet)...
+&lt;/code&gt;&lt;/pre&gt;
+With this setup I was able to easily inspect the amount of network activity for the container and debug the issue.
+&lt;h2&gt;What about HTTP Traffic&lt;/h2&gt;
+Although this is okay for TCP and/or UDP traffic there may be a use case where you need to inspect HTTP requests. If this is the case the I would recommend looking into using a proxy tool such as &lt;a href=&quot;https://hoverfly.io/&quot;&gt;Hovefly&lt;/a&gt;.</content:encoded></item><item><title><![CDATA[Use Ansible to Deploy a Docker Container]]></title><description><![CDATA[I decided to try use Ansible to deploy my Docker containers. prod
+jforte.me
+
+Ansible docs provide a list of inventory parameters 
+Here I've…]]></description><link>https://www.jforte.me/deploy-docker-ansible/</link><guid isPermaLink="false">https://www.jforte.me/deploy-docker-ansible/</guid><pubDate>Wed, 08 Feb 2017 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Deploying Environment&lt;/h2&gt;
+Deploying containers to a remote server can be rather tedious. Sometimes all you need is to deploy your container on a remote server.
+&lt;blockquote&gt;Sometime budget and time constraints don&apos;t allow you to setup a full Kubernetes cluster. But for a prototype or landing page simplicity is best.&lt;/blockquote&gt;
+Whenever I&apos;m faced with a task that is tedious and repetitive, I see it as an opportunity to automate.
+&lt;img src=&quot;/content/images/2017/02/docker-ansible.png&quot; alt=&quot;Docker + Ansible&quot;&gt;
+&lt;p&gt;I decided to try use &lt;a href=&quot;https://www.ansible.com/&quot;&gt;Ansible&lt;/a&gt; to deploy my &lt;a href=&quot;https://getdocker.com&quot;&gt;Docker&lt;/a&gt; containers.&lt;/p&gt;
+&lt;h2&gt;Requirements&lt;/h2&gt;
+To follow this guide you need:
+&lt;ul&gt;
+ 	&lt;li&gt;Remote host with ssh access&lt;/li&gt;
+ 	&lt;li&gt;Docker installed on the remote host&lt;/li&gt;
+ 	&lt;li&gt;Python Docker SDK &lt;a href=&quot;https://github.com/docker/docker-py&quot;&gt;docker-py&lt;/a&gt; installed on the remote host&lt;/li&gt;
+ 	&lt;li&gt;Container registry with an image ready to deploy&lt;/li&gt;
+&lt;/ul&gt;
+Setting up the registry and pushing the image will be covered in a future post.
+&lt;h2&gt;Ansible Environment&lt;/h2&gt;
+The majority of my projects involve some form of Python so I just install with pip
+&lt;pre&gt;&lt;code class=&quot;sh&quot;&gt;$ pip install --upgrade ansible
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h4&gt;Ops Folder&lt;/h4&gt;
+For a small project I like to keep all my devops related stuff in an &lt;code&gt;.ops&lt;/code&gt; directory on the root of my project.
+&lt;pre&gt;&lt;code class=&quot;sh&quot;&gt;.ops
+├── deploy_staging.yml
+└── hosts
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;Ansible Inventory File&lt;/h2&gt;
+I like to store a list of servers in a &lt;code&gt;hosts&lt;/code&gt; file.
+&lt;pre&gt;&lt;code class=&quot;ini&quot;&gt;[staging]
+staging.jforte.me  ansible_host=45.32.235.197
+&lt;p&gt;[prod]
+jforte.me
+&lt;/code&gt;&lt;/pre&gt;
+&lt;em&gt;Ansible docs provide a list of &lt;a href=&quot;http://docs.ansible.com/ansible/intro_inventory.html#list-of-behavioral-inventory-parameters&quot;&gt;inventory parameters&lt;/a&gt;&lt;/em&gt;&lt;/p&gt;
+&lt;h3&gt;Testing the connection&lt;/h3&gt;
+To test Ansible can connect to the server use the ping module
+&lt;pre&gt;&lt;code class=&quot;sh&quot;&gt;$ ansible -i hosts staging -m ping
+staging.jforte.me | SUCCESS =&amp;gt; {
+    &quot;changed&quot;: false,
+    &quot;ping&quot;: &quot;pong&quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;em&gt;If you are using certificates you will be prompted to enter a password.&lt;/em&gt;
+&lt;h2&gt;Simple Deployment Playbook&lt;/h2&gt;
+Deployment procedure is defined in a playbook called &lt;code&gt;deploy_staging.yml&lt;/code&gt;:
+&lt;pre&gt;&lt;code class=&quot;yml&quot;&gt;---
+- hosts: staging
+  tasks:
+    - name: login to container registry
+      docker_login:
+        registry: registry.gitlab.com
+        username: JasonForte
+        password: passwordortoken
+        reauthorize: yes
+    - name: start a new container for web
+      docker_container:
+        name: web
+        image: registry.gitlab.com/jasonforte/jforte.me:web.1702.001-dev
+        pull: true
+        restart: yes
+        state: started
+        ports:
+          - &quot;8003:80&quot;
+&lt;p&gt;&lt;/code&gt;&lt;/pre&gt;
+Here I&apos;ve defined the tasks to first login to the remote registry and then pull and start the new container. This is for my staging servers only.&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Ansible has a number of &lt;a href=&quot;http://docs.ansible.com/ansible/list_of_all_modules.html&quot;&gt;builtin modules&lt;/a&gt; for the playbooks.&lt;/em&gt;&lt;/p&gt;
+&lt;h2&gt;Running the playbook&lt;/h2&gt;
+Running the playbook requires referencing the &lt;code&gt;hosts&lt;/code&gt; file.
+&lt;pre&gt;&lt;code class=&quot;bash&quot;&gt;
+$ ansible-playbook -i hosts deploy_staging.yml
+&lt;/code&gt;&lt;/pre&gt;
+If this is successful you should see a new container running on the remote server.
+&lt;h2&gt;What&apos;s next?&lt;/h2&gt;
+The next step would be to write a task to reconfigure / restart your web server (nginx / HAProxy etc).
+&lt;p&gt;Once I&apos;m happy with the playbook I will usually add it to a Makefile for easy access.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;Makefile&quot;&gt;
+deploy:
+    ansible-playbook -i .ops/hosts .ops/deploy_staging.yml
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;I will tackle some of these next steps in future posts.&lt;/p&gt;</content:encoded></item><item><title><![CDATA[Using Custom SSL Certs with Elixir]]></title><description><![CDATA[Why Custom SSL Certs? While there is a great use-case for token based authentication, there is an emerging trend of using self-signed ssl…]]></description><link>https://www.jforte.me/custom-ssl-elixir/</link><guid isPermaLink="false">https://www.jforte.me/custom-ssl-elixir/</guid><pubDate>Mon, 30 Jan 2017 00:00:00 GMT</pubDate><content:encoded>&lt;h2&gt;Why Custom SSL Certs?&lt;/h2&gt;
+&lt;p&gt;While there is a great use-case for token based authentication, there is an emerging trend of using self-signed ssl certs to authenticate against an API.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;This has the neat effect of forcing clients to encrypt communications with your API.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;Connecting to an API via Elixir&lt;/h2&gt;
+&lt;p&gt;To use custom certs when connecting to an external endpoint make use of the &lt;a href=&quot;https://github.com/benoitc/hackney&quot;&gt;Hackney&lt;/a&gt;
+library which comes bundled with &lt;a href=&quot;https://github.com/edgurgel/httpoison&quot;&gt;HTTPoison&lt;/a&gt;.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-elixir&quot;&gt;def deps do
+  [{:httpoison, &quot;~&gt; 0.10.0&quot;}]
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Remember to include the runtime dependency.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-elixir&quot;&gt;def application do
+  [applications: [:httpoison]]
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2&gt;Making the HTTPS Request&lt;/h2&gt;
+&lt;p&gt;Making a request is as simple as supplying the paths to the SSL cert files when calling HTTPoison functions.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-elixir&quot;&gt;def https_options() do
+  [
+    hackney: [
+      ssl_options: [
+        cacertfile: &quot;/path/to/cacertfile.pem&quot;,
+        certfile: &quot;/path/to/certfile.pem&quot;,
+        keyfile: &quot;/path/to/keyfile.pem&quot;
+      ]
+    ]
+  ]
+end
+
+def get_request(url) do
+    HTTPoison.get(url, [], https_options())
+end
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;em&gt;I like to separate the hackney settings purely for readability reasons.&lt;/em&gt;&lt;/p&gt;
+&lt;h2&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;By adding SSL Certs as an authentication mechanism you force your clients to use SSL when communicating with your API. The drawback to this approach is that it still suffers from the same client side trust issues as with basic auth.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If the client accidentally leaks their cert then then you will need to make use of &lt;a href=&quot;https://jamielinux.com/docs/openssl-certificate-authority/certificate-revocation-lists.html&quot;&gt;Certificate Revocation Lists&lt;/a&gt; (CRLs) to protect your API from malicious activity.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Additional to this some clients may not be as familiar with the certificate generation and signing process which could
+deter smaller clients from implementing your API.&lt;/p&gt;</content:encoded></item></channel></rss>
